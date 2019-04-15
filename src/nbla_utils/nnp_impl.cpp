@@ -250,8 +250,13 @@ void ExecutorImpl::execute() {
 // ----------------------------------------------------------------------
 // NnpImpl
 // ----------------------------------------------------------------------
+#if defeind(NBLA_UTILS_WITH_PROTOBUF)
 NnpImpl::NnpImpl(const nbla::Context &ctx)
     : ctx_(ctx), proto_(new NNablaProtoBuf()) {}
+#else
+NnpImpl::NnpImpl(const nbla::Context &ctx)
+    : ctx_(ctx) {}
+#endif
 
 #ifdef NBLA_UTILS_WITH_HDF5
 bool NnpImpl::parse_hdf5_dataset(std::string name, hid_t did) {
@@ -482,6 +487,7 @@ bool NnpImpl::add_archive(void *archive) {
   return true;
 }
 
+#if defined(NBLA_UTILS_WITH_PROTOBUF)
 bool NnpImpl::add_prototxt(std::string filename) {
   int fd = open(filename.c_str(), O_RDONLY);
   google::protobuf::io::ZeroCopyInputStream *input =
@@ -525,6 +531,7 @@ bool NnpImpl::add_protobuf(char *buffer, int size) {
   update_parameters();
   return true;
 }
+#endif
 
 bool NnpImpl::add_hdf5(char *buffer, int size) {
 #ifdef NBLA_UTILS_WITH_HDF5
@@ -613,6 +620,7 @@ bool NnpImpl::save_parameters(const string &filename) {
     return false;
   }
 
+#ifdef NBLA_UTILS_WITH_PROTOBUF
   NNablaProtoBuf params;
   for (auto it = parameters_.begin(); it != parameters_.end(); it++) {
 
@@ -633,8 +641,12 @@ bool NnpImpl::save_parameters(const string &filename) {
   }
   params.SerializeToOstream(&ofs);
   NBLA_LOG_INFO("Saved parameters to {}", filename);
-
   return true;
+#else
+  NBLA_LOG_ERROR("Saving parameters in fbs is not supported yet.");
+  return false;
+#endif
+
 }
 
 vector<string> NnpImpl::get_optimizer_names() {

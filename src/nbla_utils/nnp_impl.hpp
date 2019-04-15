@@ -384,7 +384,9 @@ class NnpImpl {
   friend class Nnp;
   const nbla::Context kCpuCtx{{"cpu:float"}, "CpuCachedArray", "0"};
   nbla::Context ctx_;
+#ifdef NBLA_UTILS_WITH_PROTOBUF
   unique_ptr<::NNablaProtoBuf> proto_;
+#endif
   unordered_map<string, CgVariablePtr> parameters_;
 
   static const int MAX_NAME = 1024;
@@ -411,10 +413,12 @@ public:
   ~NnpImpl() {}
 
   bool add_archive(void *archive);
+#ifdef NBLA_UTILS_WITH_PROTOBUF
   bool add_prototxt(std::string filename);
   bool add_prototxt(char *buffer, int size);
   bool add_protobuf(std::string filename);
   bool add_protobuf(char *buffer, int size);
+#endif
   bool add_hdf5(char *buffer, int size);
   vector<string> get_network_names();
   shared_ptr<Network> get_network(const string &name);

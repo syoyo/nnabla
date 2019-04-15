@@ -13,7 +13,7 @@ include_directories(${CMAKE_BINARY_DIR}/libraries/include)
 
 list(APPEND nnabla_utils_SOURCES
   nnp.cpp
-  nnabla.grpc.fb.cc
+  #nnabla.grpc.fb.cc
   nnp_impl.cpp
   nnp_impl_create_function.cpp
   nnp_impl_create_solver.cpp
@@ -51,7 +51,7 @@ if (WIN32)
     message(FATAL_ERROR, "HDF5 cannot be enabled on Windows.")
     error() # Undefined command to abort cmake process here.
   endif()
-  find_package(LibArchive REQUIRED)
+  #find_package(LibArchive REQUIRED)
   find_package(ZLIB REQUIRED)
   find_package(FlatBuffers REQUIRED)
   include_directories(
@@ -79,13 +79,13 @@ else()
                           PROPERTIES IMPORTED_LOCATION
                           /usr/local/android/arm64/lib/libflatbuffers.a)
 
-    add_library(LibArchive STATIC IMPORTED)
-    set_target_properties(LibArchive
-                         PROPERTIES IMPORTED_LOCATION
-                         /usr/local/android/arm64/lib/libarchive.so)
+    #add_library(LibArchive STATIC IMPORTED)
+    #set_target_properties(LibArchive
+    #                     PROPERTIES IMPORTED_LOCATION
+    #                     /usr/local/android/arm64/lib/libarchive.so)
   else()
     find_package(Flatbuffers REQUIRED)
-    find_package(LibArchive REQUIRED)
+    #find_package(LibArchive REQUIRED)
   endif()
   if (NNABLA_UTILS_WITH_HDF5)
     if (NNABLA_UTILS_STATIC_LINK_DEPS)
@@ -120,7 +120,7 @@ else()
     target_link_libraries(nnabla_utils
       nnabla
       flatbuffers
-      LibArchive
+      #LibArchive
       ${ZLIB_LIBRARIES}
       )
   else()
