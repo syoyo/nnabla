@@ -58,12 +58,12 @@ if(NOT EXISTS ${PYTHON_COMMAND})
   endif()
 endif()
 
-if(NOT EXISTS ${PROTOC_COMMAND})
-  find_program(PROTOC_COMMAND protoc)
+if(NOT EXISTS ${FLATC_COMMAND})
+  find_program(FLATC_COMMAND flatc)
 endif()
-if(NOT EXISTS ${PROTOC_COMMAND})
+if(NOT EXISTS ${FLATC_COMMAND})
   # If find_program fails.
-  message(FATAL_ERROR, "protoc not found. Please install protocol buffer compiler.")
+  message(FATAL_ERROR, "flatc not found. Please install flatbuffers compiler.")
   error() # Place Unknown command to stop cmake process here.
 endif()
 
@@ -86,7 +86,7 @@ string(REGEX REPLACE [[^([0-9]+)\.([0-9]+)\.(.*)$]] [[\1]] version_major ${versi
 string(REGEX REPLACE [[^([0-9]+)\.([0-9]+)\.(.*)$]] [[\2]] version_minor ${version})
 string(REGEX REPLACE [[^([0-9]+)\.([0-9]+)\.(.*)$]] [[\3]] version_patch ${version})
 
-file(MAKE_DIRECTORY  ${CMAKE_SOURCE_DIR}/src/nbla/proto)
+file(MAKE_DIRECTORY  ${CMAKE_SOURCE_DIR}/src/nbla/fbs)
 execute_process(
   COMMAND
   ${PYTHON_COMMAND}
@@ -97,36 +97,36 @@ if (NOT ${GENERATE_RESULT} EQUAL 0)
   message(FATAL_ERROR "generate.py failed.")
 endif ()
 
-if (${CMAKE_SOURCE_DIR}/src/nbla/proto/nnabla.proto
-    IS_NEWER_THAN
-    ${CMAKE_SOURCE_DIR}/python/src/nnabla/utils//nnabla_pb2.py)
-  execute_process(
-    COMMAND
-    ${PROTOC_COMMAND}
-    --proto_path=${CMAKE_SOURCE_DIR}/src/nbla/proto/
-    --python_out=${CMAKE_SOURCE_DIR}/python/src/nnabla/utils
-    ${CMAKE_SOURCE_DIR}/src/nbla/proto/nnabla.proto
-    RESULT_VARIABLE PROTOC_RESULT)
-  if (NOT ${PROTOC_RESULT} EQUAL 0)
-    message(FATAL_ERROR "protoc for Python failed.")
-  endif ()
-endif()
-                         
-if (${CMAKE_SOURCE_DIR}/src/nbla/proto/nnabla.proto
-    IS_NEWER_THAN
-    ${CMAKE_SOURCE_DIR}/src/nbla_utils/nnabla.pb.cc)
-execute_process(
-  COMMAND
-  ${PROTOC_COMMAND}
-  --proto_path=${CMAKE_SOURCE_DIR}/src/nbla/proto/
-  --cpp_out=${CMAKE_SOURCE_DIR}/src/nbla_utils
-  ${CMAKE_SOURCE_DIR}/src/nbla/proto/nnabla.proto
-  RESULT_VARIABLE PROTOC_RESULT)
-  if (NOT ${PROTOC_RESULT} EQUAL 0)
-    message(FATAL_ERROR "protoc for C++ failed.")
-  endif ()
-endif()
-  
+#if (${CMAKE_SOURCE_DIR}/src/nbla/fbs/nnabla.fbs
+#    IS_NEWER_THAN
+#    ${CMAKE_SOURCE_DIR}/python/src/nnabla/utils//nnabla_pb2.py)
+#  execute_process(
+#    COMMAND
+#    ${FLAT_COMMAND}
+#    --proto_path=${CMAKE_SOURCE_DIR}/src/nbla/proto/
+#    --python_out=${CMAKE_SOURCE_DIR}/python/src/nnabla/utils
+#    ${CMAKE_SOURCE_DIR}/src/nbla/proto/nnabla.proto
+#    RESULT_VARIABLE PROTOC_RESULT)
+#  if (NOT ${PROTOC_RESULT} EQUAL 0)
+#    message(FATAL_ERROR "protoc for Python failed.")
+#  endif ()
+#endif()
+#
+#if (${CMAKE_SOURCE_DIR}/src/nbla/fbs/nnabla.fbs
+#    IS_NEWER_THAN
+#    ${CMAKE_SOURCE_DIR}/src/nbla_utils/nnabla.pb.cc)
+#execute_process(
+#  COMMAND
+#  ${PROTOC_COMMAND}
+#  --proto_path=${CMAKE_SOURCE_DIR}/src/nbla/proto/
+#  --cpp_out=${CMAKE_SOURCE_DIR}/src/nbla_utils
+#  ${CMAKE_SOURCE_DIR}/src/nbla/proto/nnabla.proto
+#  RESULT_VARIABLE PROTOC_RESULT)
+#  if (NOT ${PROTOC_RESULT} EQUAL 0)
+#    message(FATAL_ERROR "protoc for C++ failed.")
+#  endif ()
+#endif()
+
 ###############################################################################
 # C++ Library
 ###############################################################################
@@ -135,13 +135,13 @@ if(BUILD_CPP_LIB)
   # Third party libraries
   ###############################################################################
   add_subdirectory(third_party)
-  
+
   if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING
       "Build type release is default on single-configuration build system like GNU make."
       FORCE)
   endif()
-  
+
   # Flags
   if(MSVC)
     # Force to always compile with W4
@@ -152,7 +152,7 @@ if(BUILD_CPP_LIB)
     endif()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj")
   endif()
-  
+
   if(UNIX OR APPLE)
     find_program(CCACHE_FOUND ccache)
     if(CCACHE_FOUND)
@@ -162,7 +162,7 @@ if(BUILD_CPP_LIB)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -Wall")
   endif()
   nbla_warnings_disable(CMAKE_CXX_FLAGS -Wno-sign-compare -Wno-uninitialized /wd4099)
-  
+
   # Setting output directory naively
   set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
   if (WIN32)
@@ -172,7 +172,7 @@ if(BUILD_CPP_LIB)
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
   endif()
-  
+
   ###############################################################################
   # C++ core
   ###############################################################################
@@ -181,15 +181,15 @@ if(BUILD_CPP_LIB)
     ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/third_party/eigen-git-mirror-3.3.5
     ${CMAKE_SOURCE_DIR}/third_party/spdlog-0.16.3/include)
-  
+
   if(BUILD_CPP_UTILS)
     list(APPEND NBLA_INCLUDE_DIRS
       ${CMAKE_SOURCE_DIR}/third_party/cmdline-master)
   endif()
-  
+
   include_directories(${NBLA_INCLUDE_DIRS};${PROJECT_BINARY_DIR})
   add_subdirectory(src/nbla)
-  
+
   ###############################################################################
   # C++ Utilities
   ###############################################################################
@@ -198,7 +198,7 @@ if(BUILD_CPP_LIB)
     add_subdirectory(src/nbla_cli)
     add_subdirectory(examples/cpp)
   endif()
-    
+
   ###############################################################################
   # C++ Testing
   ###############################################################################
@@ -239,7 +239,7 @@ if(BUILD_CPP_LIB)
 
   option(CONFIG_BUILD_DIR ${CMAKE_BINARY_DIR})
 
-  
+
   # Two-step configure_file generation with generate-time property (target_file_name).
   # http://cmake.3232098.n2.nabble.com/cmp0026-file-GENERATE-and-configure-file-td7590275.html
   # Since multiple-configuration build system like Visual Studio requires
@@ -248,20 +248,20 @@ if(BUILD_CPP_LIB)
   # the setup.cfg file by setup.cfg-<config>. The default setup.cfg is for Release build.
   configure_file(${CMAKE_CURRENT_SOURCE_DIR}/python/setup.cfg.in
     ${CMAKE_CURRENT_SOURCE_DIR}/python/setup.cfg.in.configured)
-  
+
   file(GENERATE OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/python/setup.cfg-$<CONFIG>
     INPUT ${CMAKE_CURRENT_SOURCE_DIR}/python/setup.cfg.in.configured)
-  
+
   file(GENERATE OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/python/setup.cfg
     INPUT ${CMAKE_CURRENT_SOURCE_DIR}/python/setup.cfg.in.configured
     CONDITION $<CONFIG:Release>)
-  
+
   set_property(DIRECTORY APPEND PROPERTY ADDITIONAL_MAKE_CLEAN_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/python/setup.cfg
     ${CMAKE_CURRENT_SOURCE_DIR}/python/setup.cfg.in.configured
     ${CMAKE_CURRENT_SOURCE_DIR}/python/setup.cfg-$<CONFIG>)
-  
-  
+
+
 endif() # BUILD_CPP_LIB
 
 ###############################################################################
@@ -283,7 +283,7 @@ if(BUILD_PYTHON_PACKAGE)
 	message(FATAL_ERROR "Invalid CPPLIB_LIBRARY :[${CPPLIB_LIBRARY}]")
       endif()
     endif()
-    
+
     set(NBLA_LIBRARY_NAME ${CPPLIB_LIBRARY})  # No one sets if !BUILD_CPP_LIB
     set(CPPLIB_LIBRARY_NAME "nnabla")
     set(CPPLIB_TARGET_FILE ${CPPLIB_LIBRARY})
@@ -308,7 +308,7 @@ if(BUILD_PYTHON_PACKAGE)
   file(GLOB_RECURSE NBLA_PYTHON_BUILD_OUTPUT_CYTHON
     ${CMAKE_CURRENT_SOURCE_DIR}/python/src/*.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/python/src/*.h)
-  
+
   set(NBLA_PYTHON_SETUP ${CMAKE_CURRENT_SOURCE_DIR}/python/setup.py)
   set(NBLA_PYTHON_OUTPUT ${CMAKE_BINARY_DIR}/build)
   set(NBLA_PYTHON_OUTPUT_WHEEL ${NBLA_PYTHON_OUTPUT}/.timestamp.wheel)
@@ -358,7 +358,7 @@ if(BUILD_PYTHON_PACKAGE)
       bash -c "py.test -x")
     add_dependencies(benchmark wheel)
   endif()
-  
+
   #############################################################################
   # Document
   #############################################################################

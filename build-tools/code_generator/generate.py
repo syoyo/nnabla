@@ -44,10 +44,13 @@ def generate_cpp_utils(function_info):
         join(base, 'src/nbla_utils/nnp_impl_create_function.cpp.tmpl'), function_info=function_info, function_list=function_list)
 
 
-def generate_proto(function_info, solver_info):
-    utils.generate_from_template(
-        join(base, 'src/nbla/proto/nnabla.proto.tmpl'), function_info=function_info, solver_info=solver_info)
+#def generate_proto(function_info, solver_info):
+#    utils.generate_from_template(
+#        join(base, 'src/nbla/proto/nnabla.proto.tmpl'), function_info=function_info, solver_info=solver_info)
 
+def generate_fbs(function_info, solver_info):
+    utils.generate_from_template(
+        join(base, 'src/nbla/fbs/nnabla.fbs.tmpl'), function_info=function_info, solver_info=solver_info)
 
 def generate_python_utils(function_info):
     utils.generate_from_template(
@@ -205,7 +208,7 @@ def generate():
     generate_solver_python_interface(solver_info)
     generate_function_python_interface(function_info)
     generate_python_utils(function_info)
-    generate_proto(function_info, solver_info)
+    #generate_proto(function_info, solver_info)
     generate_cpp_utils(function_info)
     generate_function_cpp_interface(function_info)
 

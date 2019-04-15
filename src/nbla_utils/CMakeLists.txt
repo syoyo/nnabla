@@ -13,7 +13,7 @@ include_directories(${CMAKE_BINARY_DIR}/libraries/include)
 
 list(APPEND nnabla_utils_SOURCES
   nnp.cpp
-  nnabla.pb.cc
+  nnabla.grpc.fb.cc
   nnp_impl.cpp
   nnp_impl_create_function.cpp
   nnp_impl_create_solver.cpp
@@ -53,10 +53,10 @@ if (WIN32)
   endif()
   find_package(LibArchive REQUIRED)
   find_package(ZLIB REQUIRED)
-  find_package(Protobuf REQUIRED)
+  find_package(FlatBuffers REQUIRED)
   include_directories(
     ${LibArchive_INCLUDE_DIR}
-    ${PROTOBUF_INCLUDE_DIR}
+    ${FLATBUFFERS_INCLUDE_DIR}
     ${ZLIB_INCLUDE_DIRS}
     )
   target_link_libraries(nnabla_utils
@@ -74,17 +74,17 @@ else()
   endif()
   if (ANDROID)
     include_directories(/usr/local/android/arm64/include)
-    add_library(Protobuf STATIC IMPORTED)
-    set_target_properties(Protobuf 
-                          PROPERTIES IMPORTED_LOCATION 
-                          /usr/local/android/arm64/lib/libprotobuf.a)
-    
+    add_library(flatbuffers STATIC IMPORTED)
+    set_target_properties(flatbuffers
+                          PROPERTIES IMPORTED_LOCATION
+                          /usr/local/android/arm64/lib/libflatbuffers.a)
+
     add_library(LibArchive STATIC IMPORTED)
-    set_target_properties(LibArchive 
-                         PROPERTIES IMPORTED_LOCATION 
-                         /usr/local/android/arm64/lib/libarchive.so) 
+    set_target_properties(LibArchive
+                         PROPERTIES IMPORTED_LOCATION
+                         /usr/local/android/arm64/lib/libarchive.so)
   else()
-    find_package(Protobuf REQUIRED)
+    find_package(Flatbuffers REQUIRED)
     find_package(LibArchive REQUIRED)
   endif()
   if (NNABLA_UTILS_WITH_HDF5)
@@ -109,7 +109,7 @@ else()
 
   include_directories(
     ${LibArchive_INCLUDE_DIR}
-    ${PROTOBUF_INCLUDE_DIR}
+    ${FLATBUFFERS_INCLUDE_DIR}
     ${ZLIB_INCLUDE_DIRS}
     )
   if (NNABLA_UTILS_WITH_HDF5)
@@ -119,14 +119,14 @@ else()
   if (ANDROID)
     target_link_libraries(nnabla_utils
       nnabla
-      Protobuf
+      flatbuffers
       LibArchive
       ${ZLIB_LIBRARIES}
       )
   else()
     target_link_libraries(nnabla_utils
       nnabla
-      ${PROTOBUF_LIBRARY}
+      ${FLATBUFFERS_LIBRARY}
       ${LibArchive_LIBRARIES}
       ${ZLIB_LIBRARIES}
       )

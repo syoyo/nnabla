@@ -117,7 +117,9 @@ const bool TrainingConfig::save_best() const { return impl_->save_best(); }
 // Nnp
 // ----------------------------------------------------------------------
 Nnp::Nnp(const nbla::Context &ctx) : impl_(new NnpImpl(ctx)) {
+#if defined(NNBLA_USE_PROTOBUF)
   GOOGLE_PROTOBUF_VERIFY_VERSION;
+#endif
 }
 
 Nnp::~Nnp() {}
@@ -126,6 +128,7 @@ bool Nnp::add(const string &filename) {
   int ep = filename.find_last_of(".");
   std::string extname = filename.substr(ep, filename.size() - ep);
 
+#if defined(NNBLA_USE_PROTOBUF)
   if (extname == ".prototxt" || extname == ".nntxt") {
     return impl_->add_prototxt(filename);
   } else if (extname == ".protobuf") {
@@ -155,6 +158,9 @@ bool Nnp::add(const string &filename) {
     std::cerr << "Error: No available file." << std::endl;
     return false;
   }
+#else
+  std::cerr << "Error: TODO." << std::endl;
+#endif
 
   return false;
 }
@@ -210,6 +216,6 @@ shared_ptr<Monitor> Nnp::get_monitor(const string &name) {
 shared_ptr<TrainingConfig> Nnp::get_training_config() {
   return impl_->get_training_config();
 }
-}
-}
-}
+}  // namespace nnp
+}  // namespace utils
+}  // namespace nbla
